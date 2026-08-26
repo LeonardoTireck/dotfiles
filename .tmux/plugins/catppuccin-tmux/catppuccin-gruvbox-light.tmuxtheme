@@ -1,0 +1,17 @@
+# NOTE: you can use vars with $<var> and ${<var>} as long as the str is double quoted: ""
+# WARNING: hex colors can't contain capital letters
+
+# --> Gruvbox Light
+thm_bg="#f9f5d7"
+thm_fg="#3c3836"
+thm_cyan="#427b58"
+thm_black="#f9f5d7"
+thm_gray="#ebdbb2"
+thm_magenta="#8f3f71"
+thm_pink="#8f3f71"
+thm_red="#9d0006"
+thm_green="#79740e"
+thm_yellow="#b57614"
+thm_blue="#076678"
+thm_orange="#af3a03"
+thm_black4="#a89984"
