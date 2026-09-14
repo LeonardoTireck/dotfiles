@@ -8,6 +8,7 @@ alias reload="source ~/.zshrc"
 alias dcup="docker compose up -d"
 alias dcdw="docker compose down"
 alias dclog="docker compose logs api --since 30s -f"
+alias hr="herdr"
 
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
