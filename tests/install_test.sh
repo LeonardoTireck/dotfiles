@@ -115,6 +115,30 @@ make_minimal_herdr_fixture() {
   INSTALLER_UNDER_TEST=$FIXTURE_DIR/install.sh
 }
 
+snapshot_manifest() {
+  snapshot_root=$1
+  (
+    cd "$snapshot_root" || exit 1
+    find . -type f -print | sort
+  )
+}
+
+assert_snapshot_tree() {
+  expected_root=$1
+  actual_root=$2
+  expected_manifest_file=$CASE_DIR/.expected-manifest
+  actual_manifest_file=$CASE_DIR/.actual-manifest
+  snapshot_manifest "$expected_root" > "$expected_manifest_file"
+  (cd "$actual_root" && find . -type f -print | sort) > "$actual_manifest_file"
+  expected_manifest=$(sed -n '1,10000p' "$expected_manifest_file")
+  actual_manifest=$(sed -n '1,10000p' "$actual_manifest_file")
+  assert_equal "$expected_manifest" "$actual_manifest" || return 1
+  while IFS= read -r relative; do
+    [ -n "$relative" ] || continue
+    assert_same_file "$expected_root/$relative" "$actual_root/$relative" || return 1
+  done < "$expected_manifest_file"
+}
+
 test_default_install() {
   new_case default
   run_installer || return 1
@@ -184,9 +208,7 @@ test_selective_herdr() {
 test_selective_nvim() {
   new_case selective-nvim
   run_installer --nvim || return 1
-  assert_same_file "$PROJECT_ROOT/nvim/init.lua" "$TEST_CONFIG/nvim/init.lua" || return 1
-  assert_same_file "$PROJECT_ROOT/nvim/lua/plugins/core.lua" \
-    "$TEST_CONFIG/nvim/lua/plugins/core.lua" || return 1
+  assert_snapshot_tree "$PROJECT_ROOT/nvim" "$TEST_CONFIG/nvim" || return 1
   assert_not_exists "$TEST_HOME/.zshrc" || return 1
   assert_not_exists "$TEST_HOME/.tmux.conf" || return 1
   assert_not_exists "$TEST_HOME/.tmux" || return 1
@@ -286,12 +308,16 @@ test_restore_after_copy_failure() {
   printf 'original destination\n' > "$TEST_HOME/.zshrc"
   fake_bin=$CASE_DIR/bin
   mkdir -p "$fake_bin"
-  printf '#!/bin/sh\nexit 97\n' > "$fake_bin/cp"
+  printf '#!/bin/sh\nfor argument do destination=$argument; done\nprintf partial > "$destination"\nexit 97\n' \
+    > "$fake_bin/cp"
   chmod +x "$fake_bin/cp"
   if run_installer_with_path "$fake_bin:$ORIGINAL_PATH" --zsh; then
     fail 'copy failure should fail the installation' || return 1
   fi
   grep -Fq 'original destination' "$TEST_HOME/.zshrc" || return 1
+  if grep -Fq 'partial' "$TEST_HOME/.zshrc"; then
+    fail 'partial replacement must be removed before restoration' || return 1
+  fi
 }
 
 test_zsh_portability() {
@@ -313,12 +339,36 @@ test_zsh_optional_sources() {
 
 test_rerun_creates_new_backup() {
   new_case rerun
-  printf 'first destination\n' > "$TEST_HOME/.zshrc"
-  run_installer --zsh || return 1
-  run_installer --zsh || return 1
+  printf 'first zsh destination\n' > "$TEST_HOME/.zshrc"
+  printf 'first tmux destination\n' > "$TEST_HOME/.tmux.conf"
+  mkdir -p "$TEST_HOME/.tmux/plugins/catppuccin-tmux"
+  printf 'first tmux plugin\n' > "$TEST_HOME/.tmux/plugins/catppuccin-tmux/marker"
+  mkdir -p "$TEST_CONFIG/ghostty/themes" "$TEST_CONFIG/herdr" "$TEST_CONFIG/nvim"
+  printf 'first ghostty config\n' > "$TEST_CONFIG/ghostty/config"
+  printf 'first ghostty theme\n' > "$TEST_CONFIG/ghostty/themes/old-theme"
+  printf 'first herdr config\n' > "$TEST_CONFIG/herdr/config.toml"
+  printf 'first nvim config\n' > "$TEST_CONFIG/nvim/old.lua"
+  run_installer || return 1
+  run_installer || return 1
   assert_same_file "$PROJECT_ROOT/term/.zshrc" "$TEST_HOME/.zshrc" || return 1
-  backup_count=$(find "$(backup_root)" -type f -name .zshrc -print | wc -l | tr -d ' ')
-  assert_equal 2 "$backup_count" || return 1
+  assert_same_file "$PROJECT_ROOT/.tmux/.tmux.conf" "$TEST_HOME/.tmux.conf" || return 1
+  assert_snapshot_tree "$PROJECT_ROOT/.tmux/plugins/catppuccin-tmux" \
+    "$TEST_HOME/.tmux/plugins/catppuccin-tmux" || return 1
+  assert_same_file "$PROJECT_ROOT/ghostty/config" "$TEST_CONFIG/ghostty/config" || return 1
+  assert_snapshot_tree "$PROJECT_ROOT/ghostty/themes" "$TEST_CONFIG/ghostty/themes" || return 1
+  assert_same_file "$PROJECT_ROOT/herdr/config.toml" "$TEST_CONFIG/herdr/config.toml" || return 1
+  assert_snapshot_tree "$PROJECT_ROOT/nvim" "$TEST_CONFIG/nvim" || return 1
+  for backup_path in \
+    '*/zsh/.zshrc' \
+    '*/tmux/.tmux.conf' \
+    '*/tmux/catppuccin-tmux' \
+    '*/ghostty/config' \
+    '*/ghostty/themes' \
+    '*/herdr/config.toml' \
+    '*/nvim/nvim'; do
+    backup_count=$(find "$(backup_root)" -path "$(backup_root)/$backup_path" -print | wc -l | tr -d ' ')
+    assert_equal 2 "$backup_count" || return 1
+  done
 }
 
 test_local_only_installer() {
@@ -374,6 +424,7 @@ test_invalid_arguments_are_read_only() {
   fi
   assert_equal 2 "$status" || return 1
   assert_text_contains "$(sed -n '1,40p' "$CASE_DIR/positional.out")" 'Usage:' || return 1
+  assert_text_contains "$(sed -n '1,40p' "$CASE_DIR/positional.out")" 'unexpected positional argument' || return 1
   grep -Fq 'keep invalid destination' "$TEST_HOME/.zshrc" || return 1
   assert_not_exists "$TEST_STATE/myDotFiles/backups" || return 1
 }
