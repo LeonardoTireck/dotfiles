@@ -1,0 +1,23 @@
+onboarding = false
+
+[ui.toast]
+delivery = "herdr"
+
+[ui.sound]
+enabled = true
+
+[ui]
+status_indicators = "dots"
+
+[theme]
+name = "catppuccin"
+auto_switch = false
+
+[keys]
+prefix = "ctrl+s"
+previous_workspace = "prefix+shift+k"
+next_workspace = "prefix+shift+j"
+previous_agent = "prefix+shift+h"
+next_agent = "prefix+shift+l"
+navigate_workspace_up = "k"
+navigate_workspace_down = "j"
