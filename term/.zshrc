@@ -1,6 +1,8 @@
 fpath=("$HOME/.zsh/zsh-completions/src" $fpath)
 
-source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+if [[ -r "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]; then
+  source "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
+fi
 
 alias myip="curl -s https://checkip.amazonaws.com"
 alias myhistory="history | awk '{print \$2}' | sort | uniq -c | sort -rn | head -10"
@@ -18,7 +20,9 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-source ~/.local/share/powerlevel10k/powerlevel10k.zsh-theme
+if [[ -r "$HOME/.local/share/powerlevel10k/powerlevel10k.zsh-theme" ]]; then
+  source "$HOME/.local/share/powerlevel10k/powerlevel10k.zsh-theme"
+fi
 
 export ZSH="$HOME/.oh-my-zsh"
 
@@ -33,7 +37,9 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+if [[ -r "$HOME/.p10k.zsh" ]]; then
+  source "$HOME/.p10k.zsh"
+fi
 
 # opencode
-export PATH=/home/leonardotireck/.opencode/bin:$PATH
+export PATH="$HOME/.opencode/bin:$PATH"
