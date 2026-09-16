@@ -37,42 +37,42 @@ selected_herdr=0
 selected_nvim=0
 selection_count=0
 
-for argument do
+for argument; do
   case $argument in
-    --help)
-      usage
-      exit 0
-      ;;
-    --zsh)
-      selected_zsh=1
-      selection_count=$((selection_count + 1))
-      ;;
-    --tmux)
-      selected_tmux=1
-      selection_count=$((selection_count + 1))
-      ;;
-    --ghostty)
-      selected_ghostty=1
-      selection_count=$((selection_count + 1))
-      ;;
-    --herdr)
-      selected_herdr=1
-      selection_count=$((selection_count + 1))
-      ;;
-    --nvim)
-      selected_nvim=1
-      selection_count=$((selection_count + 1))
-      ;;
-    -* )
-      printf 'install.sh: unknown option: %s\n' "$argument" >&2
-      usage >&2
-      exit 2
-      ;;
-    *)
-      printf 'install.sh: unexpected positional argument: %s\n' "$argument" >&2
-      usage >&2
-      exit 2
-      ;;
+  --help)
+    usage
+    exit 0
+    ;;
+  --zsh)
+    selected_zsh=1
+    selection_count=$((selection_count + 1))
+    ;;
+  --tmux)
+    selected_tmux=1
+    selection_count=$((selection_count + 1))
+    ;;
+  --ghostty)
+    selected_ghostty=1
+    selection_count=$((selection_count + 1))
+    ;;
+  --herdr)
+    selected_herdr=1
+    selection_count=$((selection_count + 1))
+    ;;
+  --nvim)
+    selected_nvim=1
+    selection_count=$((selection_count + 1))
+    ;;
+  -*)
+    printf 'install.sh: unknown option: %s\n' "$argument" >&2
+    usage >&2
+    exit 2
+    ;;
+  *)
+    printf 'install.sh: unexpected positional argument: %s\n' "$argument" >&2
+    usage >&2
+    exit 2
+    ;;
   esac
 done
 
@@ -96,16 +96,16 @@ check_source() {
   source_kind=$2
 
   case $source_kind in
-    file)
-      if [ ! -f "$source_path" ] || [ ! -r "$source_path" ]; then
-        fail "selected source is missing or unreadable: $source_path" || return 1
-      fi
-      ;;
-    directory)
-      if [ ! -d "$source_path" ] || [ ! -r "$source_path" ] || [ ! -x "$source_path" ]; then
-        fail "selected source is missing or unreadable: $source_path" || return 1
-      fi
-      ;;
+  file)
+    if [ ! -f "$source_path" ] || [ ! -r "$source_path" ]; then
+      fail "selected source is missing or unreadable: $source_path" || return 1
+    fi
+    ;;
+  directory)
+    if [ ! -d "$source_path" ] || [ ! -r "$source_path" ] || [ ! -x "$source_path" ]; then
+      fail "selected source is missing or unreadable: $source_path" || return 1
+    fi
+    ;;
   esac
 }
 
@@ -113,23 +113,23 @@ preflight_group() {
   group=$1
 
   case $group in
-    zsh)
-      check_source "$REPO_ROOT/term/.zshrc" file || return 1
-      ;;
-    tmux)
-      check_source "$REPO_ROOT/.tmux/.tmux.conf" file || return 1
-      check_source "$REPO_ROOT/.tmux/plugins/catppuccin-tmux" directory || return 1
-      ;;
-    ghostty)
-      check_source "$REPO_ROOT/ghostty/config" file || return 1
-      check_source "$REPO_ROOT/ghostty/themes" directory || return 1
-      ;;
-    herdr)
-      check_source "$REPO_ROOT/herdr/config.toml" file || return 1
-      ;;
-    nvim)
-      check_source "$REPO_ROOT/nvim" directory || return 1
-      ;;
+  zsh)
+    check_source "$REPO_ROOT/terminal/.zshrc" file || return 1
+    ;;
+  tmux)
+    check_source "$REPO_ROOT/.tmux/.tmux.conf" file || return 1
+    check_source "$REPO_ROOT/.tmux/plugins/catppuccin-tmux" directory || return 1
+    ;;
+  ghostty)
+    check_source "$REPO_ROOT/ghostty/config" file || return 1
+    check_source "$REPO_ROOT/ghostty/themes" directory || return 1
+    ;;
+  herdr)
+    check_source "$REPO_ROOT/herdr/config.toml" file || return 1
+    ;;
+  nvim)
+    check_source "$REPO_ROOT/nvim" directory || return 1
+    ;;
   esac
 }
 
@@ -236,24 +236,24 @@ install_group() {
   group=$1
 
   case $group in
-    zsh)
-      copy_target "$REPO_ROOT/term/.zshrc" "$HOME/.zshrc" zsh file || return 1
-      ;;
-    tmux)
-      copy_target "$REPO_ROOT/.tmux/.tmux.conf" "$HOME/.tmux.conf" tmux file || return 1
-      copy_target "$REPO_ROOT/.tmux/plugins/catppuccin-tmux" \
-        "$HOME/.tmux/plugins/catppuccin-tmux" tmux directory || return 1
-      ;;
-    ghostty)
-      copy_target "$REPO_ROOT/ghostty/config" "$CONFIG_ROOT/ghostty/config" ghostty file || return 1
-      copy_target "$REPO_ROOT/ghostty/themes" "$CONFIG_ROOT/ghostty/themes" ghostty directory || return 1
-      ;;
-    herdr)
-      copy_target "$REPO_ROOT/herdr/config.toml" "$CONFIG_ROOT/herdr/config.toml" herdr file || return 1
-      ;;
-    nvim)
-      copy_target "$REPO_ROOT/nvim" "$CONFIG_ROOT/nvim" nvim directory || return 1
-      ;;
+  zsh)
+    copy_target "$REPO_ROOT/terminal/.zshrc" "$HOME/.zshrc" zsh file || return 1
+    ;;
+  tmux)
+    copy_target "$REPO_ROOT/.tmux/.tmux.conf" "$HOME/.tmux.conf" tmux file || return 1
+    copy_target "$REPO_ROOT/.tmux/plugins/catppuccin-tmux" \
+      "$HOME/.tmux/plugins/catppuccin-tmux" tmux directory || return 1
+    ;;
+  ghostty)
+    copy_target "$REPO_ROOT/ghostty/config" "$CONFIG_ROOT/ghostty/config" ghostty file || return 1
+    copy_target "$REPO_ROOT/ghostty/themes" "$CONFIG_ROOT/ghostty/themes" ghostty directory || return 1
+    ;;
+  herdr)
+    copy_target "$REPO_ROOT/herdr/config.toml" "$CONFIG_ROOT/herdr/config.toml" herdr file || return 1
+    ;;
+  nvim)
+    copy_target "$REPO_ROOT/nvim" "$CONFIG_ROOT/nvim" nvim directory || return 1
+    ;;
   esac
 
   printf 'Installed %s configuration\n' "$group"
