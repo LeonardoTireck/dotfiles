@@ -117,6 +117,16 @@ run_stow() {
   target=$1
   shift
   if [ "$simulate" -eq 1 ]; then
+    if [ ! -d "$target" ]; then
+      simulation_target=$(mktemp -d "${TMPDIR:-/tmp}/myDotFiles-stow.XXXXXX") || {
+        fail "cannot create temporary simulation target"
+        return 1
+      }
+      stow --dir="$REPO_ROOT/packages" --target="$simulation_target" --dotfiles --simulate --verbose "$@"
+      stow_status=$?
+      rmdir "$simulation_target" 2>/dev/null || :
+      return "$stow_status"
+    fi
     stow --dir="$REPO_ROOT/packages" --target="$target" --dotfiles --simulate --verbose "$@"
   else
     stow --dir="$REPO_ROOT/packages" --target="$target" --dotfiles "$@"
