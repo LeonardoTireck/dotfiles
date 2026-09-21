@@ -51,13 +51,22 @@ Proof: `sh tests/tmux_external_plugin_management_test.sh stow_is_local_only`
 Proof: `sh tests/tmux_external_plugin_management_test.sh tpm_runtime_controls`
 
 **C8** - Pressing the configured `prefix + I` control creates the external `tmux-resurrect` checkout and records the tmux environment refresh in the isolated TPM fixture.
-Proof: `sh tests/tmux_external_plugin_management_test.sh tpm_runtime_controls` (binding); `sh tests/tmux_external_plugin_management_test.sh prefix_i_installs_external_plugin` (install/reload action)
+Proof: `sh tests/tmux_external_plugin_management_test.sh tpm_runtime_controls` (binding); `sh tests/tmux_external_plugin_management_test.sh prefix_i_installs_external_plugin` (attached-client install/reload action); `sh tests/tmux_external_plugin_management_test.sh real_tpm_fetches_external_plugin` (real TPM fetch)
 
 **C9** - Repeating tmux deployment succeeds without duplicate plugin paths, and deployment does not remove an existing external `tmux-resurrect` checkout.
 Proof: `sh tests/tmux_external_plugin_management_test.sh deployment_is_idempotent`
 
 **C10** - A conflicting user-owned `.tmux.conf` or Catppuccin entrypoint remains unchanged while Stow reports a non-zero conflict.
 Proof: `sh tests/tmux_external_plugin_management_test.sh stow_preserves_conflicts`
+
+**C16** - Repeating `prefix + I` retains exactly one external `tmux-resurrect` checkout while reloading the tmux environment again.
+Proof: `sh tests/tmux_external_plugin_management_test.sh prefix_i_installs_external_plugin`
+
+**C17** - Removing `tmux-resurrect` from the plugin list and redeploying does not delete an existing external checkout.
+Proof: `sh tests/tmux_external_plugin_management_test.sh plugin_removal_preserves_external_checkout`
+
+**C18** - With the real TPM installed, `prefix + I` fetches `tmux-resurrect` into the external plugin directory without creating a repository copy.
+Proof: `sh tests/tmux_external_plugin_management_test.sh real_tpm_fetches_external_plugin`
 
 ### S2 - Documented bootstrap sequence · 1 source file · 7,222 bytes · ~1.8k
 
@@ -80,12 +89,12 @@ Proof: `sh tests/tmux_bootstrap_docs_test.sh ownership_boundary_is_documented`
 
 - validation: C1-C5, C11-C15
 - failure modes: C6, C10, C14
-- idempotency and retry: C8, C9
+- idempotency and retry: C8, C9, C16, C17
 - authorization: existing installer `HOME` requirement and no-`sudo` deployment guidance; no authorization boundary exists
 - concurrency and ordering: C4, C7, C11-C13
 - data lifecycle: C9; tmux-resurrect save files remain user data outside the repository
-- external-dependency failure: C6, C14; TPM installation and plugin fetch remain explicit user actions
-- state transitions: C7-C9 cover TPM bootstrap, plugin installation, reload, and retention
+- external-dependency failure: C6, C14, C18; TPM installation and plugin fetch remain explicit user actions
+- state transitions: C7-C9 and C16-C18 cover TPM bootstrap, plugin installation, reload, retention, and removal from the list
 - observability: C10; GNU Stow's existing conflict output remains the diagnostic contract
 
 ## Coverage
@@ -97,8 +106,8 @@ Proof: `sh tests/tmux_bootstrap_docs_test.sh ownership_boundary_is_documented`
 | tmux loading commands (2) | local Catppuccin entrypoint -> C3; final TPM initializer -> C4 | - |
 | Stow deployment targets (2) | `$HOME/.tmux.conf` and `$HOME/.tmux/` -> C5 | - |
 | prohibited installer command classes (3) | Git, network client, package manager -> C6 | - |
-| runtime controls (2) | TPM prefix binding -> C7; `prefix + I` install/reload -> C8 | - |
-| deployment lifecycle (3) | repeat -> C9; `.tmux.conf` conflict -> C10; Catppuccin entrypoint conflict -> C10 | - |
+| runtime controls (3) | TPM prefix binding -> C7; fixture install/reload -> C8; real TPM fetch -> C18 | - |
+| deployment lifecycle (5) | repeat -> C9; repeated `prefix + I` -> C16; removed plugin -> C17; `.tmux.conf` conflict -> C10; Catppuccin entrypoint conflict -> C10 | - |
 | documented bootstrap steps (5) | TPM prerequisite/order -> C11; conflict migration -> C12; plugin install -> C13; missing TPM -> C14; ownership boundary -> C15 | - |
 
 - No checks claim a status code, route, or response shape.
