@@ -12,7 +12,7 @@ Selectors may be combined or repeated. Deployment creates symlinks through GNU S
 Options:
   --simulate  Show planned Stow operations without changing the filesystem.
   --zsh       Deploy the Zsh configuration and prompt configuration.
-  --tmux      Deploy tmux configuration and bundled Catppuccin plugin.
+  --tmux      Deploy tmux configuration and repository-owned Catppuccin plugin.
   --ghostty   Deploy Ghostty configuration and themes.
   --herdr     Deploy Herdr configuration.
   --nvim      Deploy the Neovim configuration.
@@ -133,12 +133,12 @@ run_stow() {
   fi
 }
 
-home_packages=
-if [ "$selected_zsh" -eq 1 ]; then home_packages="$home_packages zsh"; fi
-if [ "$selected_tmux" -eq 1 ]; then home_packages="$home_packages tmux"; fi
-if [ -n "$home_packages" ]; then
-  set -- $home_packages
-  run_stow "$HOME" "$@" || exit $?
+if [ "$selected_zsh" -eq 1 ]; then
+  run_stow "$HOME" zsh || exit $?
+fi
+if [ "$selected_tmux" -eq 1 ]; then
+  # Keep the Stow target directory real so TPM can add external plugin checkouts.
+  run_stow "$HOME" --no-folding tmux || exit $?
 fi
 
 config_packages=

@@ -42,8 +42,9 @@ dependency bootstrapper.
 - NVM: the shared Zsh configuration loads '$HOME/.nvm/nvm.sh'. Homebrew's NVM
   installation uses '$HOMEBREW_PREFIX/opt/nvm/nvm.sh', so add that source to
   your shell setup if you use Homebrew's NVM formula.
-- tmux: install TPM at '$HOME/.tmux/plugins/tpm'. TPM can then install
-  tmux-resurrect. The Catppuccin plugin files are included in this repository.
+- tmux: TPM is a separate prerequisite at '$HOME/.tmux/plugins/tpm'. Follow
+  [Set up tmux plugins](#set-up-tmux-plugins) before starting tmux. TPM then
+  installs tmux-resurrect, while the Catppuccin files remain in this repository.
 - Neovim: the first launch clones 'lazy.nvim' when it is missing, then loads
   LazyVim and the configured plugins. Keep Git and network access available for
   that first launch, or install 'lazy.nvim' before starting Neovim.
@@ -71,6 +72,44 @@ Do not run it with 'sudo'. Inspect existing destinations before the first real
 deployment. GNU Stow refuses to replace user-owned files and directories. Back
 up or explicitly migrate any existing files that conflict with the selected
 package, then rerun the command. The wrapper never uses Stow's '--adopt' option.
+
+## Set up tmux plugins
+
+TPM and upstream plugins are external to this repository. 'install.sh' does
+not install TPM, run Git, or fetch any tmux plugin. Complete these steps in
+order before starting or reloading tmux:
+
+1. Install TPM at the standard path. Skip this command if that checkout
+   already exists:
+
+~~~sh
+git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+~~~
+
+2. Inspect '$HOME/.tmux.conf' and '$HOME/.tmux/' for user-owned files that
+   would conflict with the Stow package. Back up or explicitly migrate those
+   files before continuing. Then deploy the repository-owned tmux package:
+
+~~~sh
+./install.sh --tmux
+~~~
+
+If Stow reports a conflict, keep the user-owned content unchanged, resolve the
+conflict explicitly, and rerun the command. The deployment leaves
+'$HOME/.tmux/' as the home for both the repository-owned Catppuccin files and
+TPM-managed external checkouts.
+
+3. Start tmux, or reload an existing server after the deployment:
+
+~~~sh
+tmux source-file "$HOME/.tmux.conf"
+~~~
+
+4. In tmux, press the configured prefix followed by uppercase `I` (`prefix +
+I`). TPM fetches the declared upstream plugins, including
+'tmux-plugins/tmux-resurrect', into '$HOME/.tmux/plugins/' and reloads the tmux
+environment. Catppuccin is already loaded from the Stow-managed local
+entrypoint, so it is not listed as a TPM plugin.
 
 ## Deploy configuration
 
