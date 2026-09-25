@@ -1,0 +1,19 @@
+# NOTE: you can use vars with $<var> and ${<var>} as long as the str is double quoted: ""
+# WARNING: hex colors can't contain capital letters
+
+# --> Nocturnal Winter (Ghostty) + Nightfly (Neovim)
+# Ghostty supplies the terminal base and neon accents; Nightfly supplies the
+# blue-gray UI surfaces and complementary editor accents.
+thm_bg="#0d0d17"
+thm_fg="#e6e5e5"
+thm_cyan="#7fdbca"
+thm_black="#011627"
+thm_gray="#092236"
+thm_magenta="#ae81ff"
+thm_pink="#ff2b6d"
+thm_red="#f12d52"
+thm_green="#09cd7e"
+thm_yellow="#f5f17a"
+thm_blue="#3182e0"
+thm_orange="#f78c6c"
+thm_black4="#252c3f"
