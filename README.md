@@ -1,4 +1,4 @@
-# myDotFiles
+# dot files
 
 Configuration for Zsh, tmux, Ghostty, Herdr, and Neovim, deployed with GNU
 Stow through the repository's 'install.sh' wrapper.
