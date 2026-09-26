@@ -1,264 +1,108 @@
 # dot files
 
-Configuration for Zsh, tmux, Ghostty, Herdr, and Neovim, deployed with GNU
-Stow through the repository's 'install.sh' wrapper.
+Configs for Zsh, tmux, Ghostty, Herdr, and Neovim. `install.sh` links them into place with GNU Stow.
 
-## Before you begin
+## Prerequisites
 
-1. Clone the repository and enter it:
-
-~~~sh
+```sh
 git clone https://github.com/LeonardoTireck/dotfiles.git
 cd dotfiles
-~~~
+```
 
-2. Install GNU Stow. It is the only prerequisite required by 'install.sh'.
-Install the applications whose configuration you want to use as well:
+Install GNU Stow plus the apps you use: Zsh, tmux, Ghostty, Herdr, Neovim.
 
-- Zsh
-- tmux
-- Ghostty
-- Herdr
-- Neovim
+- macOS: `brew bundle --file=Brewfile` (install [Homebrew](https://brew.sh/) first if needed).
+- Linux: use your distro packages or the apps' official instructions.
 
-On macOS with Homebrew, the included 'Brewfile' installs these tools and the
-other integrations used by this repository:
+`install.sh` only creates symlinks. It does not install packages or contact the network.
 
-~~~sh
-brew bundle --file=Brewfile
-~~~
+Optional, only if you use them:
 
-Install [Homebrew](https://brew.sh/) first if it is not already available. On
-Linux, install GNU Stow and the applications with your distribution's package
-manager or their official installation instructions. 'install.sh' does not
-install packages, invoke a package manager, contact a network client, or run a
-dependency bootstrapper.
+- Zsh: zsh-autosuggestions, zsh-completions, Powerlevel10k, and NVM (`$HOME/.nvm/nvm.sh`).
+- Neovim: needs Git + network on first launch to fetch `lazy.nvim`.
 
-3. Install optional integrations that you want to use:
+Run as your own user, never with `sudo`. Back up any dotfiles that might conflict first — Stow refuses to overwrite them, and the wrapper never auto-adopts or creates backups.
 
-- Zsh: zsh-autosuggestions, zsh-completions, and Powerlevel10k. Linux paths are
-  '$HOME/.zsh/' and '$HOME/.local/share/powerlevel10k/'. macOS paths are the
-  Homebrew prefix paths or '$HOME/.zsh/'.
-- NVM: the shared Zsh configuration loads '$HOME/.nvm/nvm.sh'. Homebrew's NVM
-  installation uses '$HOMEBREW_PREFIX/opt/nvm/nvm.sh', so add that source to
-  your shell setup if you use Homebrew's NVM formula.
-- tmux: TPM is a separate prerequisite at '$HOME/.tmux/plugins/tpm'. Follow
-  [Set up tmux plugins](#set-up-tmux-plugins) before starting tmux. TPM then
-  installs tmux-resurrect, while the Catppuccin files remain in this repository.
-- Neovim: the first launch clones 'lazy.nvim' when it is missing, then loads
-  LazyVim and the configured plugins. Keep Git and network access available for
-  that first launch, or install 'lazy.nvim' before starting Neovim.
+## Preview and install
 
-The Zsh adapters discover optional paths at shell startup. On macOS, the
-adapter checks 'HOMEBREW_PREFIX', '/opt/homebrew', and '/usr/local'. It does not
-run 'brew'. Linux uses user-local paths and does not inspect Homebrew paths.
+```sh
+sh -n install.sh
+stow --version
+./install.sh --simulate --zsh --tmux --ghostty --herdr --nvim
+./install.sh
+```
 
-4. Decide whether to use the default configuration root or set
-'XDG_CONFIG_HOME':
+No selectors means all five packages. If the simulation looks right, run `./install.sh` for real.
 
-~~~sh
-# Default: $HOME/.config
-./install.sh --simulate --ghostty --herdr --nvim
+Verify, then restart the apps to load the new configs:
 
-# Optional alternate root
-XDG_CONFIG_HOME="$HOME/.config-work" ./install.sh --simulate --ghostty --nvim
-~~~
+```sh
+ls -l "$HOME/.zshrc" "$HOME/.p10k.zsh" "$HOME/.tmux.conf" "$HOME/.tmux"
+ls -l "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty" "${XDG_CONFIG_HOME:-$HOME/.config}/herdr" "${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
+```
 
-The simulation uses a temporary target when the selected XDG root does not
-exist, so it does not create the real configuration directory.
-
-5. Run the installer as the user whose home directory should receive the links.
-Do not run it with 'sudo'. Inspect existing destinations before the first real
-deployment. GNU Stow refuses to replace user-owned files and directories. Back
-up or explicitly migrate any existing files that conflict with the selected
-package, then rerun the command. The wrapper never uses Stow's '--adopt' option.
+See `./install.sh --help` for all options.
 
 ## Set up tmux plugins
 
-TPM and upstream plugins are external to this repository. 'install.sh' does
-not install TPM, run Git, or fetch any tmux plugin. Complete these steps in
-order before starting or reloading tmux:
+TPM and upstream plugins are external to this repository. 'install.sh' does not install TPM, run Git, or fetch plugins. Do these steps in order, before starting or reloading tmux.
 
-1. Install TPM at the standard path. Skip this command if that checkout
-   already exists:
+1. Install TPM. TPM is a separate prerequisite at `$HOME/.tmux/plugins/tpm`. Skip this command if that checkout already exists:
 
-~~~sh
-git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
-~~~
+   ```sh
+   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+   ```
 
-2. Inspect '$HOME/.tmux.conf' and '$HOME/.tmux/' for user-owned files that
-   would conflict with the Stow package. Back up or explicitly migrate those
-   files before continuing. Then deploy the repository-owned tmux package:
+2. Inspect '$HOME/.tmux.conf' and '$HOME/.tmux/' for user-owned files that would conflict. Back up or explicitly migrate those files before continuing, then deploy tmux:
 
-~~~sh
-./install.sh --tmux
-~~~
+   ```sh
+   ./install.sh --tmux
+   ```
 
-If Stow reports a conflict, keep the user-owned content unchanged, resolve the
-conflict explicitly, and rerun the command. The deployment leaves
-'$HOME/.tmux/' as the home for both the repository-owned Catppuccin files and
-TPM-managed external checkouts.
+   `$HOME/.tmux/` holds both the repository-owned Catppuccin files and TPM-managed plugins.
 
-3. Start tmux, or reload an existing server after the deployment:
+3. Reload tmux:
 
-~~~sh
-tmux source-file "$HOME/.tmux.conf"
-~~~
+   ```sh
+   tmux source-file "$HOME/.tmux.conf"
+   ```
 
-4. In tmux, press the configured prefix followed by uppercase `I` (`prefix +
-I`). TPM fetches the declared upstream plugins, including
-'tmux-plugins/tmux-resurrect', into '$HOME/.tmux/plugins/' and reloads the tmux
-environment. Catppuccin is already loaded from the Stow-managed local
-entrypoint, so it is not listed as a TPM plugin.
+4. In tmux, press prefix + I. TPM fetches the declared plugins, including 'tmux-plugins/tmux-resurrect', into '$HOME/.tmux/plugins/' and reloads the tmux environment. Catppuccin is already loaded from the Stow-managed local entrypoint, so it is not listed as a TPM plugin.
 
-## Deploy configuration
+## Install only what you need
 
-Run the syntax check and a simulation from the repository directory:
+Selectors are additive and repeatable:
 
-~~~sh
-sh -n install.sh
-stow --version
-./install.sh --simulate --zsh --tmux --ghostty --herdr --nvim
-~~~
-
-When the simulation shows the expected operations, deploy all five packages:
-
-~~~sh
-./install.sh
-~~~
-
-With no selectors, the wrapper deploys all five packages. Prefer explicit
-selectors when changing one group:
-
-~~~sh
+```sh
 ./install.sh --zsh
 ./install.sh --tmux --ghostty
 ./install.sh --herdr --nvim
-./install.sh --zsh --tmux --ghostty --herdr --nvim
-~~~
+```
 
-Selectors are additive and repeating a selector has no additional effect.
+After editing a package, just rerun its selector.
 
-Use '--help' to print syntax without changing a destination:
+| Package | Links to |
+| --- | --- |
+| `packages/zsh` | `$HOME/.zshrc`, `$HOME/.p10k.zsh`, `$HOME/.zshrc.d/` |
+| `packages/tmux` | `$HOME/.tmux.conf`, `$HOME/.tmux/` |
+| `packages/ghostty` | `${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/` |
+| `packages/herdr` | `${XDG_CONFIG_HOME:-$HOME/.config}/herdr/` |
+| `packages/nvim` | `${XDG_CONFIG_HOME:-$HOME/.config}/nvim/` |
 
-~~~sh
-./install.sh --help
-~~~
+Use another config root with `XDG_CONFIG_HOME`:
 
-The real deployment creates the missing XDG configuration parent, then creates
-symlinks through GNU Stow. It does not create backups or install applications.
+```sh
+XDG_CONFIG_HOME="$HOME/.config-work" ./install.sh --simulate --ghostty --nvim
+```
 
-Verify the resulting links after deployment:
+## Conflicts and removal
 
-~~~sh
-ls -l "$HOME/.zshrc" "$HOME/.p10k.zsh" "$HOME/.tmux.conf" "$HOME/.tmux"
-ls -l "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty"
-ls -l "${XDG_CONFIG_HOME:-$HOME/.config}/herdr"
-ls -l "${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
-~~~
+If Stow reports a conflict, your files are left unchanged. Back up or move them explicitly, then rerun. There is no automatic backup.
 
-Start a new Zsh, tmux session, Ghostty, Herdr, or Neovim process to load the
-linked configuration. Neovim may install its plugins during its first launch.
+To unlink while keeping the repo intact, preview then delete:
 
-## Update one configuration group
-
-After editing a package file, rerun the matching selector. Selectors can be
-combined and repeated selectors have no additional effect:
-
-~~~sh
-./install.sh --zsh
-./install.sh --tmux --ghostty
-./install.sh --herdr --nvim
-~~~
-
-## Package and destination mapping
-
-Each directory under 'packages/' is a separate GNU Stow package. The wrapper
-targets '$HOME' for shell and tmux packages and
-'${XDG_CONFIG_HOME:-$HOME/.config}' for application configuration packages.
-
-| Package | Stow installation image | Destination |
-| --- | --- | --- |
-| 'packages/zsh' | 'dot-zshrc', 'dot-p10k.zsh', 'dot-zshrc.d/' | '$HOME/.zshrc', '$HOME/.p10k.zsh', '$HOME/.zshrc.d/' |
-| 'packages/tmux' | 'dot-tmux.conf', 'dot-tmux/' | '$HOME/.tmux.conf', '$HOME/.tmux/' |
-| 'packages/ghostty' | 'ghostty/' | '${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/' |
-| 'packages/herdr' | 'herdr/' | '${XDG_CONFIG_HOME:-$HOME/.config}/herdr/' |
-| 'packages/nvim' | 'nvim/' | '${XDG_CONFIG_HOME:-$HOME/.config}/nvim/' |
-
-'--dotfiles' converts package names beginning with 'dot-' into hidden target
-names. GNU Stow owns the links; editing a linked file edits the repository
-package directly.
-
-## Existing files and recovery
-
-GNU Stow reports a conflict and exits non-zero when a selected destination is
-an existing user-owned file or directory. The wrapper never passes '--adopt',
-so it never imports local edits implicitly. Inspect the conflict, make any
-migration decision explicitly, and rerun the selected command.
-
-Stow's two-phase conflict check leaves a conflicting target unchanged. There is
-no automatic backup directory.
-
-To remove links for a package while keeping the repository package intact, run
-the matching delete operation:
-
-~~~sh
+```sh
+stow --dir="$PWD/packages" --target="$HOME" --dotfiles --simulate --verbose --delete zsh tmux
 stow --dir="$PWD/packages" --target="$HOME" --dotfiles --delete zsh tmux
-stow --dir="$PWD/packages" \
-  --target="${XDG_CONFIG_HOME:-$HOME/.config}" \
-  --dotfiles --delete ghostty herdr nvim
-~~~
-
-Run the same commands with '--simulate --verbose' first when reviewing a
-recovery:
-
-~~~sh
-stow --dir="$PWD/packages" --target="$HOME" \
-  --dotfiles --simulate --verbose --delete zsh tmux
-~~~
-
-## Configuration targets
-
-'HOME' is required. Zsh and tmux always target:
-
-~~~text
-$HOME/.zshrc
-$HOME/.p10k.zsh
-$HOME/.tmux.conf
-$HOME/.tmux/
-~~~
-
-Ghostty, Herdr, and Neovim target:
-
-~~~text
-${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/
-${XDG_CONFIG_HOME:-$HOME/.config}/herdr/
-${XDG_CONFIG_HOME:-$HOME/.config}/nvim/
-~~~
-
-Set 'XDG_CONFIG_HOME' to use a different configuration root:
-
-~~~sh
-XDG_CONFIG_HOME="$HOME/.config-work" ./install.sh --ghostty --nvim
-~~~
-
-The wrapper creates a missing XDG target parent during a real deployment. During
-simulation it uses a temporary target and leaves the real destination unchanged.
-
-## Validation
-
-Check the wrapper syntax before deploying:
-
-~~~sh
-sh -n install.sh
-~~~
-
-Preview a deployment after installing GNU Stow:
-
-~~~sh
-stow --version
-./install.sh --simulate --zsh --tmux --ghostty --herdr --nvim
-~~~
-
-Applications and their optional dependencies remain a separate manual
-installation concern.
+stow --dir="$PWD/packages" --target="${XDG_CONFIG_HOME:-$HOME/.config}" --dotfiles --delete ghostty herdr nvim
+```
