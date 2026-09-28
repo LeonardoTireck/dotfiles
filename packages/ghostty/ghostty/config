@@ -1,26 +1,27 @@
-keybind = "command+r=reload_config"
+keybind = "super+shift+r=reload_config"
+# keybind = "command+r=reload_config"
 
-keybind = "command+up=new_split:up"
-keybind = "command+down=new_split:down"
-keybind = "command+left=new_split:left"
-keybind = "command+right=new_split:right"
-keybind = "ctrl+h=goto_split:left"
-keybind = "ctrl+j=goto_split:down"
-keybind = "ctrl+k=goto_split:up"
-keybind = "ctrl+l=goto_split:right"
+# keybind = "command+up=new_split:up"
+# keybind = "command+down=new_split:down"
+# keybind = "command+left=new_split:left"
+# keybind = "command+right=new_split:right"
+# keybind = "ctrl+h=goto_split:left"
+# keybind = "ctrl+j=goto_split:down"
+# keybind = "ctrl+k=goto_split:up"
+# keybind = "ctrl+l=goto_split:right"
 
-# theme = Everforest Light Med
-# theme = Everforest Light Nvim
 theme = Nocturnal Winter
+# theme = Everforest Light Nvim
+# theme = Everforest Light Med
 # theme = Gruvbox Dark Hard
 # theme = Gruvbox Light
- 
-window-decoration = true
-background-opacity = 0.98
+
+window-decoration = false
+background-opacity = 1
 mouse-hide-while-typing = true
 
-font-size = 20
-font-family = JetBrainsMono Nerd Font 
-
-window-width=1640
-window-height=510
+font-size = 13
+# font-family = JetBrainsMono Nerd Font 
+# font-family = 3270 Nerd Font
+font-family = FiraCode Nerd Font Med 
+# font-family = MesloLG Nerd Font 
