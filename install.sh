@@ -94,6 +94,7 @@ if [ -z "${HOME:-}" ]; then
 fi
 
 CONFIG_ROOT=${XDG_CONFIG_HOME:-$HOME/.config}
+platform=$(uname -s)
 
 if ! command -v stow >/dev/null 2>&1; then
   fail 'GNU Stow (stow) is required but was not found in PATH' || exit 1
@@ -109,7 +110,13 @@ check_package() {
 
 if [ "$selected_zsh" -eq 1 ]; then check_package zsh || exit 1; fi
 if [ "$selected_tmux" -eq 1 ]; then check_package tmux || exit 1; fi
-if [ "$selected_ghostty" -eq 1 ]; then check_package ghostty || exit 1; fi
+if [ "$selected_ghostty" -eq 1 ]; then
+  if [ "$platform" = Darwin ]; then
+    check_package ghostty-macos || exit 1
+  else
+    check_package ghostty || exit 1
+  fi
+fi
 if [ "$selected_herdr" -eq 1 ]; then check_package herdr || exit 1; fi
 if [ "$selected_nvim" -eq 1 ]; then check_package nvim || exit 1; fi
 
@@ -140,9 +147,14 @@ if [ "$selected_tmux" -eq 1 ]; then
   # Keep the Stow target directory real so TPM can add external plugin checkouts.
   run_stow "$HOME" --no-folding tmux || exit $?
 fi
-
 config_packages=
-if [ "$selected_ghostty" -eq 1 ]; then config_packages="$config_packages ghostty"; fi
+if [ "$selected_ghostty" -eq 1 ]; then
+  if [ "$platform" = Darwin ]; then
+    config_packages="$config_packages ghostty-macos"
+  else
+    config_packages="$config_packages ghostty"
+  fi
+fi
 if [ "$selected_herdr" -eq 1 ]; then config_packages="$config_packages herdr"; fi
 if [ "$selected_nvim" -eq 1 ]; then config_packages="$config_packages nvim"; fi
 if [ -n "$config_packages" ]; then

@@ -18,17 +18,26 @@ Install GNU Stow plus the apps you use: Zsh, tmux, Ghostty, Herdr, Neovim.
 
 Optional, only if you use them:
 
-- Zsh: zsh-autosuggestions, zsh-completions, Powerlevel10k, and NVM (`$HOME/.nvm/nvm.sh`).
+- Zsh: zsh-autosuggestions, zsh-completions, Powerlevel10k, and NVM (`$HOME/.nvm/nvm.sh`). On Linux, Powerlevel10k may live in `~/powerlevel10k` or `~/.local/share/powerlevel10k`.
+- Ghostty: the macOS profile uses JetBrainsMono Nerd Font; the Linux profile uses FiraCode Nerd Font Med. Install the matching font if you want that exact appearance.
 - Neovim: needs Git + network on first launch to fetch `lazy.nvim`.
 
 Run as your own user, never with `sudo`. Back up any dotfiles that might conflict first — Stow refuses to overwrite them, and the wrapper never auto-adopts or creates backups.
 
 ## Preview and install
 
+If an older macOS installation links `~/.config/ghostty` to `packages/ghostty/ghostty`, remove that managed link before installing the Mac profile:
+
+```sh
+stow --dir="$PWD/packages" --target="${XDG_CONFIG_HOME:-$HOME/.config}" --dotfiles --simulate --verbose --delete ghostty
+stow --dir="$PWD/packages" --target="${XDG_CONFIG_HOME:-$HOME/.config}" --dotfiles --delete ghostty
+```
+
 ```sh
 sh -n install.sh
 stow --version
 ./install.sh --simulate --zsh --tmux --ghostty --herdr --nvim
+sh tests/cross_platform_config_test.sh
 ./install.sh
 ```
 
@@ -79,13 +88,18 @@ Selectors are additive and repeatable:
 ./install.sh --herdr --nvim
 ```
 
-After editing a package, just rerun its selector.
+Edits to linked files take effect when the app reloads. Rerun a selector after adding files to a package.
+
+Zsh loads `~/.zshrc.d/macos.zsh` on macOS and `~/.zshrc.d/linux.zsh` on Linux. The Linux adapter keeps the previous PATH order and supports the existing `~/powerlevel10k` prompt. Linux autosuggestions can be enabled with `MYDOTFILES_LINUX_AUTOSUGGESTIONS=1`.
+
+Ghostty uses `${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/` on both systems. Linux deploys the unchanged `packages/ghostty` profile, so an existing Linux Stow link continues working after a pull. macOS deploys `packages/ghostty-macos` to the same location, with the Mac shortcuts, font, window settings, and a link to the shared custom themes.
 
 | Package | Links to |
 | --- | --- |
 | `packages/zsh` | `$HOME/.zshrc`, `$HOME/.p10k.zsh`, `$HOME/.zshrc.d/` |
 | `packages/tmux` | `$HOME/.tmux.conf`, `$HOME/.tmux/` |
-| `packages/ghostty` | `${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/` |
+| `packages/ghostty` (Linux) | `${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/` |
+| `packages/ghostty-macos` (macOS) | `${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/` |
 | `packages/herdr` | `${XDG_CONFIG_HOME:-$HOME/.config}/herdr/` |
 | `packages/nvim` | `${XDG_CONFIG_HOME:-$HOME/.config}/nvim/` |
 
@@ -97,12 +111,17 @@ XDG_CONFIG_HOME="$HOME/.config-work" ./install.sh --simulate --ghostty --nvim
 
 ## Conflicts and removal
 
-If Stow reports a conflict, your files are left unchanged. Back up or move them explicitly, then rerun. There is no automatic backup.
+Stow does not overwrite a conflicting file. When multiple groups are selected, earlier groups may already have been linked before a later group reports a conflict. Back up or move the conflicting file explicitly, then rerun. There is no automatic backup.
 
 To unlink while keeping the repo intact, preview then delete:
 
 ```sh
 stow --dir="$PWD/packages" --target="$HOME" --dotfiles --simulate --verbose --delete zsh tmux
 stow --dir="$PWD/packages" --target="$HOME" --dotfiles --delete zsh tmux
+# Linux:
+stow --dir="$PWD/packages" --target="${XDG_CONFIG_HOME:-$HOME/.config}" --dotfiles --simulate --verbose --delete ghostty herdr nvim
 stow --dir="$PWD/packages" --target="${XDG_CONFIG_HOME:-$HOME/.config}" --dotfiles --delete ghostty herdr nvim
+# macOS:
+stow --dir="$PWD/packages" --target="${XDG_CONFIG_HOME:-$HOME/.config}" --dotfiles --simulate --verbose --delete ghostty-macos herdr nvim
+stow --dir="$PWD/packages" --target="${XDG_CONFIG_HOME:-$HOME/.config}" --dotfiles --delete ghostty-macos herdr nvim
 ```

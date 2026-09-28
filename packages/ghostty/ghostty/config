@@ -1,14 +1,4 @@
 keybind = "super+shift+r=reload_config"
-# keybind = "command+r=reload_config"
-
-# keybind = "command+up=new_split:up"
-# keybind = "command+down=new_split:down"
-# keybind = "command+left=new_split:left"
-# keybind = "command+right=new_split:right"
-# keybind = "ctrl+h=goto_split:left"
-# keybind = "ctrl+j=goto_split:down"
-# keybind = "ctrl+k=goto_split:up"
-# keybind = "ctrl+l=goto_split:right"
 
 theme = Nocturnal Winter
 # theme = Everforest Light Nvim
