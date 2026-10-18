@@ -1,4 +1,4 @@
-# dot files
+# dotfiles
 
 Configs for Zsh, tmux, Ghostty, Herdr, and Neovim. `install.sh` links them into place with GNU Stow.
 
