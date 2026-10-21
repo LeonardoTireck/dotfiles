@@ -23,6 +23,7 @@ brew "stylua"
 brew "nvm"
 brew "node"
 brew "powerlevel10k"
+brew "worktrunk"
 brew "zsh-autosuggestions"
 brew "zsh-completions"
 
