@@ -53,3 +53,8 @@ fi
 export PATH="$HOME/.opencode/bin:$PATH"
 
 if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
+
+# Machine-local settings and secrets; keep this file out of the repository.
+if [[ -r "$HOME/.zshrc.local" ]]; then
+  source "$HOME/.zshrc.local"
+fi

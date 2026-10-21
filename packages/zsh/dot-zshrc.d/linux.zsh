@@ -11,6 +11,15 @@ for mydotfiles_p10k in \
   fi
 done
 
-if [[ "${MYDOTFILES_LINUX_AUTOSUGGESTIONS:-0}" == 1 && -r "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]; then
-  source "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
-fi
+for mydotfiles_autosuggestions in \
+  "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh" \
+  /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh; do
+  if [[ -r "$mydotfiles_autosuggestions" ]]; then
+    source "$mydotfiles_autosuggestions"
+    break
+  fi
+done
+
+autoload -Uz compinit
+compinit -i
+typeset -g MYDOTFILES_COMPLETION_INITIALIZED=1

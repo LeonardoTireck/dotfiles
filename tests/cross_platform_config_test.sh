@@ -101,6 +101,9 @@ for test_platform in Darwin Linux; do
     HOME="$test_home" PATH=/usr/bin:/bin MYDOTFILES_ZSH_PLATFORM=Linux "$ZSH_BIN" -f -c \
       'source "$HOME/.zshrc"; expected="$HOME/.opencode/bin:$HOME/.local/bin/Azure.Functions.Cli.linux-x64.4.7.0/:$HOME/.local/bin:$HOME/.cargo/bin:/usr/bin:/bin:/usr/local/go/bin"; [[ "$MYDOTFILES_TEST_LINUX_THEME" == loaded && "$PATH" == "$expected" ]]' \
       || fail 'Linux prompt or PATH differs from the previous profile'
+    HOME="$test_home" MYDOTFILES_ZSH_PLATFORM=Linux "$ZSH_BIN" -f -c \
+      'source "$HOME/.zshrc"; (( $+functions[compdef] ))' \
+      || fail 'Linux Zsh completion system was not initialized'
   fi
 done
 
