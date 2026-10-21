@@ -111,7 +111,7 @@ Selectors are additive and repeatable:
 
 Edits to linked files take effect when the app reloads. Rerun a selector after adding files to a package.
 
-Zsh loads `~/.zshrc.d/macos.zsh` on macOS and `~/.zshrc.d/linux.zsh` on Linux. The Linux adapter keeps the previous PATH order and supports the existing `~/powerlevel10k` prompt. Linux autosuggestions can be enabled with `MYDOTFILES_LINUX_AUTOSUGGESTIONS=1`.
+Zsh loads `~/.zshrc.d/macos.zsh` on macOS and `~/.zshrc.d/linux.zsh` on Linux. The Linux adapter keeps the previous PATH order and supports the existing `~/powerlevel10k` prompt. Both adapters initialize Zsh completion, and Linux loads zsh-autosuggestions from `~/.zsh/zsh-autosuggestions` or the distro package (`sudo dnf install zsh-autosuggestions` on Fedora). Put machine-local settings and secrets such as tokens in `~/.zshrc.local`, which `~/.zshrc` sources last and the repository never tracks.
 
 Ghostty uses `${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/` on both systems. Linux deploys the unchanged `packages/ghostty` profile, so an existing Linux Stow link continues working after a pull. macOS deploys `packages/ghostty-macos` to the same location, with the Mac shortcuts, font, window settings, and a link to the shared custom themes.
 
