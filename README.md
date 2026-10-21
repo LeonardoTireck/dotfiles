@@ -1,6 +1,6 @@
 # dotfiles
 
-Configs for Zsh, tmux, Ghostty, Herdr, and Neovim. `install.sh` links them into place with GNU Stow.
+Configs for Zsh, tmux, Ghostty, Herdr, Neovim, and the Claude Code status line. `install.sh` links them into place with GNU Stow.
 
 ## Prerequisites
 
@@ -9,18 +9,19 @@ git clone https://github.com/LeonardoTireck/dotfiles.git
 cd dotfiles
 ```
 
-Install GNU Stow plus the apps you use: Zsh, tmux, Ghostty, Herdr, Neovim.
+Install GNU Stow plus the apps you use: Zsh, tmux, Ghostty, Herdr, Neovim, Claude Code.
 
 - macOS: `brew bundle --file=Brewfile` (install [Homebrew](https://brew.sh/) first if needed).
 - Linux: use your distro packages or the apps' official instructions.
 
-`install.sh` only creates symlinks. It does not install packages or contact the network.
+`install.sh` creates symlinks, plus one `statusLine` entry in `~/.claude/settings.json` for the Claude package. It does not install packages or contact the network.
 
 Optional, only if you use them:
 
 - Zsh: zsh-autosuggestions, zsh-completions, Powerlevel10k, and NVM (`$HOME/.nvm/nvm.sh`). On Linux, Powerlevel10k may live in `~/powerlevel10k` or `~/.local/share/powerlevel10k`.
 - Ghostty: the macOS profile uses JetBrainsMono Nerd Font; the Linux profile uses FiraCode Nerd Font Med. Install the matching font if you want that exact appearance.
 - Neovim: needs Git + network on first launch to fetch `lazy.nvim`.
+- Claude Code status line: needs `bash`, `git`, `jq`, and `perl`. The Brewfile installs `jq` on macOS; on Linux install it from your distro packages.
 
 Run as your own user, never with `sudo`. Back up any dotfiles that might conflict first — Stow refuses to overwrite them, and the wrapper never auto-adopts or creates backups.
 
@@ -36,17 +37,18 @@ stow --dir="$PWD/packages" --target="${XDG_CONFIG_HOME:-$HOME/.config}" --dotfil
 ```sh
 sh -n install.sh
 stow --version
-./install.sh --simulate --zsh --tmux --ghostty --herdr --nvim
+./install.sh --simulate --zsh --tmux --ghostty --herdr --nvim --claude
 sh tests/cross_platform_config_test.sh
+sh tests/claude_statusline_test.sh
 ./install.sh
 ```
 
-No selectors means all five packages. If the simulation looks right, run `./install.sh` for real.
+No selectors means all six packages. If the simulation looks right, run `./install.sh` for real.
 
 Verify, then restart the apps to load the new configs:
 
 ```sh
-ls -l "$HOME/.zshrc" "$HOME/.p10k.zsh" "$HOME/.tmux.conf" "$HOME/.tmux"
+ls -l "$HOME/.zshrc" "$HOME/.p10k.zsh" "$HOME/.tmux.conf" "$HOME/.tmux" "$HOME/.claude/statusline.sh"
 ls -l "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty" "${XDG_CONFIG_HOME:-$HOME/.config}/herdr" "${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
 ```
 
@@ -78,6 +80,24 @@ TPM and upstream plugins are external to this repository. 'install.sh' does not 
 
 4. In tmux, press prefix + I. TPM fetches the declared plugins, including 'tmux-plugins/tmux-resurrect', into '$HOME/.tmux/plugins/' and reloads the tmux environment. Catppuccin is already loaded from the Stow-managed local entrypoint, so it is not listed as a TPM plugin.
 
+## Set up the Claude Code status line
+
+`./install.sh --claude` links `~/.claude/statusline.sh`. `~/.claude/` stays a real directory because Claude Code keeps sessions, history, and settings there.
+
+`~/.claude/settings.json` belongs to Claude Code and is not linked. When it has no `statusLine` yet, `install.sh` adds this entry and keeps every other setting, creating the file if needed:
+
+```json
+"statusLine": {
+  "type": "command",
+  "command": "~/.claude/statusline.sh",
+  "refreshInterval": 60
+}
+```
+
+An existing `statusLine` is never replaced, and `--simulate` only reports the change. If `jq` is missing or the file is not a JSON object, `install.sh` prints a warning and leaves the file alone; add the entry by hand in that case.
+
+The status line shows the repository, branch, pull request, model, context use, and the 5-hour and 7-day usage limits.
+
 ## Install only what you need
 
 Selectors are additive and repeatable:
@@ -86,6 +106,7 @@ Selectors are additive and repeatable:
 ./install.sh --zsh
 ./install.sh --tmux --ghostty
 ./install.sh --herdr --nvim
+./install.sh --claude
 ```
 
 Edits to linked files take effect when the app reloads. Rerun a selector after adding files to a package.
@@ -102,6 +123,7 @@ Ghostty uses `${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/` on both systems. Linux
 | `packages/ghostty-macos` (macOS) | `${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/` |
 | `packages/herdr` | `${XDG_CONFIG_HOME:-$HOME/.config}/herdr/` |
 | `packages/nvim` | `${XDG_CONFIG_HOME:-$HOME/.config}/nvim/` |
+| `packages/claude` | `$HOME/.claude/statusline.sh` |
 
 Use another config root with `XDG_CONFIG_HOME`:
 
@@ -116,8 +138,9 @@ Stow does not overwrite a conflicting file. When multiple groups are selected, e
 To unlink while keeping the repo intact, preview then delete:
 
 ```sh
-stow --dir="$PWD/packages" --target="$HOME" --dotfiles --simulate --verbose --delete zsh tmux
-stow --dir="$PWD/packages" --target="$HOME" --dotfiles --delete zsh tmux
+stow --dir="$PWD/packages" --target="$HOME" --dotfiles --simulate --verbose --delete zsh tmux claude
+stow --dir="$PWD/packages" --target="$HOME" --dotfiles --delete zsh tmux claude
+# Unlinking claude leaves the statusLine entry in ~/.claude/settings.json; remove it by hand.
 # Linux:
 stow --dir="$PWD/packages" --target="${XDG_CONFIG_HOME:-$HOME/.config}" --dotfiles --simulate --verbose --delete ghostty herdr nvim
 stow --dir="$PWD/packages" --target="${XDG_CONFIG_HOME:-$HOME/.config}" --dotfiles --delete ghostty herdr nvim

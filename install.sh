@@ -4,9 +4,9 @@ set -u
 
 usage() {
   cat <<EOF
-Usage: $(basename "$0") [--simulate] [--zsh] [--tmux] [--ghostty] [--herdr] [--nvim]
+Usage: $(basename "$0") [--simulate] [--zsh] [--tmux] [--ghostty] [--herdr] [--nvim] [--claude]
 
-Without selectors, all supported groups are deployed: zsh, tmux, ghostty, herdr, and nvim.
+Without selectors, all supported groups are deployed: zsh, tmux, ghostty, herdr, nvim, and claude.
 Selectors may be combined or repeated. Deployment creates symlinks through GNU Stow.
 
 Options:
@@ -16,6 +16,7 @@ Options:
   --ghostty   Deploy Ghostty configuration and themes.
   --herdr     Deploy Herdr configuration.
   --nvim      Deploy the Neovim configuration.
+  --claude    Deploy the Claude Code status line script and enable it in settings.json.
   --help      Show this help text without changing any destination.
 EOF
 }
@@ -36,6 +37,7 @@ selected_tmux=0
 selected_ghostty=0
 selected_herdr=0
 selected_nvim=0
+selected_claude=0
 selection_count=0
 simulate=0
 
@@ -68,6 +70,10 @@ for argument; do
     selected_nvim=1
     selection_count=$((selection_count + 1))
     ;;
+  --claude)
+    selected_claude=1
+    selection_count=$((selection_count + 1))
+    ;;
   -*)
     printf 'install.sh: unknown option: %s\n' "$argument" >&2
     usage >&2
@@ -87,6 +93,7 @@ if [ "$selection_count" -eq 0 ]; then
   selected_ghostty=1
   selected_herdr=1
   selected_nvim=1
+  selected_claude=1
 fi
 
 if [ -z "${HOME:-}" ]; then
@@ -119,6 +126,7 @@ if [ "$selected_ghostty" -eq 1 ]; then
 fi
 if [ "$selected_herdr" -eq 1 ]; then check_package herdr || exit 1; fi
 if [ "$selected_nvim" -eq 1 ]; then check_package nvim || exit 1; fi
+if [ "$selected_claude" -eq 1 ]; then check_package claude || exit 1; fi
 
 run_stow() {
   target=$1
@@ -140,12 +148,59 @@ run_stow() {
   fi
 }
 
+CLAUDE_STATUS_LINE='{"type":"command","command":"~/.claude/statusline.sh","refreshInterval":60}'
+
+# settings.json belongs to Claude Code, so only add the statusLine entry when it is missing.
+enable_claude_status_line() {
+  settings=$HOME/.claude/settings.json
+  if ! command -v jq >/dev/null 2>&1; then
+    printf 'install.sh: jq not found; add the statusLine entry from README.md to %s\n' "$settings" >&2
+    return 0
+  fi
+  if [ -e "$settings" ]; then
+    jq -e 'has("statusLine")' "$settings" >/dev/null 2>&1
+    case $? in
+    0) return 0 ;;
+    1) ;;
+    *)
+      printf 'install.sh: %s is not a JSON object; add the statusLine entry from README.md by hand\n' "$settings" >&2
+      return 0
+      ;;
+    esac
+  fi
+  if [ "$simulate" -eq 1 ]; then
+    printf 'Would add statusLine to %s\n' "$settings"
+    return 0
+  fi
+  settings_tmp=$(mktemp "${TMPDIR:-/tmp}/myDotFiles-claude.XXXXXX") || {
+    fail 'cannot create temporary settings file'
+    return 1
+  }
+  if [ -e "$settings" ]; then
+    jq --argjson status_line "$CLAUDE_STATUS_LINE" '. + {statusLine: $status_line}' "$settings" >"$settings_tmp"
+  else
+    jq -n --argjson status_line "$CLAUDE_STATUS_LINE" '{statusLine: $status_line}' >"$settings_tmp"
+  fi && cat "$settings_tmp" >"$settings"
+  settings_status=$?
+  rm -f "$settings_tmp"
+  if [ "$settings_status" -ne 0 ]; then
+    fail "cannot update $settings"
+    return 1
+  fi
+  printf 'Added statusLine to %s\n' "$settings"
+}
+
 if [ "$selected_zsh" -eq 1 ]; then
   run_stow "$HOME" zsh || exit $?
 fi
 if [ "$selected_tmux" -eq 1 ]; then
   # Keep the Stow target directory real so TPM can add external plugin checkouts.
   run_stow "$HOME" --no-folding tmux || exit $?
+fi
+if [ "$selected_claude" -eq 1 ]; then
+  # Keep ~/.claude real: Claude Code stores sessions, history, and settings there.
+  run_stow "$HOME" --no-folding claude || exit $?
+  enable_claude_status_line || exit $?
 fi
 config_packages=
 if [ "$selected_ghostty" -eq 1 ]; then

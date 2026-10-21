@@ -10,12 +10,13 @@ brew "stow"
 brew "tmux"
 brew "zsh"
 
-# Commands used by the shell and Neovim integrations.
+# Commands used by the shell, Neovim, and Claude Code status line integrations.
 brew "curl"
 brew "fd"
 brew "gh"
 brew "git"
 brew "go"
+brew "jq"
 brew "ripgrep"
 brew "stylua"
 
